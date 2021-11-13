@@ -25,7 +25,6 @@ pub enum MyEnum {
     C,
 }
 
-// fictitious Fltk again...
 #[derive(Debug, Clone, FltkForm)]
 pub struct MyStruct {
     a: f64,
