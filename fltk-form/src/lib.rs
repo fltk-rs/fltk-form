@@ -6,7 +6,7 @@
     ## Usage
     ```toml,no_run
     [dependencies]
-    fltk = "1.2"
+    fltk = { git = "https://github.com/fltk-rs/fltk-rs" }
     fltk-form = { git = "https://github.com/MoAlyousef/fltk-form" }
     fltk-form-derive = { git = "https://github.com/MoAlyousef/fltk-form" }
     ```
@@ -49,10 +49,10 @@
 
     fn main() {
         let s = MyStruct::new();
-        
+
         let a = app::App::default().with_scheme(app::Scheme::Gtk);
         app::set_background_color(222, 222, 222);
-        
+
         let mut win = window::Window::default().with_size(400, 300);
         let mut grp = group::Group::default().with_size(300, 200).center_of_parent();
         let w = s.generate();
@@ -70,7 +70,6 @@
 */
 
 use fltk::{prelude::*, *};
-use fltk_sys::widget;
 use std::os::raw;
 
 pub trait FltkForm {
@@ -83,11 +82,7 @@ impl FltkForm for f64 {
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
-            app::set_raw_callback(
-                &mut i,
-                Box::into_raw(Box::new(val)) as *mut raw::c_void,
-                None,
-            );
+            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
         }
         Box::new(i)
     }
@@ -99,11 +94,7 @@ impl FltkForm for f32 {
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
-            app::set_raw_callback(
-                &mut i,
-                Box::into_raw(Box::new(val)) as *mut raw::c_void,
-                None,
-            );
+            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
         }
         Box::new(i)
     }
@@ -115,11 +106,7 @@ impl FltkForm for i32 {
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
-            app::set_raw_callback(
-                &mut i,
-                Box::into_raw(Box::new(val)) as *mut raw::c_void,
-                None,
-            );
+            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
         }
         Box::new(i)
     }
@@ -131,11 +118,7 @@ impl FltkForm for i64 {
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
-            app::set_raw_callback(
-                &mut i,
-                Box::into_raw(Box::new(val)) as *mut raw::c_void,
-                None,
-            );
+            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
         }
         Box::new(i)
     }
@@ -147,11 +130,7 @@ impl FltkForm for String {
         let val = self.clone();
         i.set_value(&val);
         unsafe {
-            app::set_raw_callback(
-                &mut i,
-                Box::into_raw(Box::new(val)) as *mut raw::c_void,
-                None,
-            );
+            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
         }
         Box::new(i)
     }
@@ -164,11 +143,7 @@ impl FltkForm for bool {
         i.set_value(*self);
         i.clear_visible_focus();
         unsafe {
-            app::set_raw_callback(
-                &mut i,
-                Box::into_raw(Box::new(val)) as *mut raw::c_void,
-                None,
-            );
+            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
         }
         Box::new(i)
     }
@@ -180,15 +155,13 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
     let grp = unsafe { group::Group::from_widget_ptr(wid as _) };
     for child in grp.into_iter() {
         if child.label() == prop {
-            let val =
-                unsafe {
-                    let ptr = widget::Fl_Widget_user_data(child.as_widget_ptr() as _);
-                    if ptr.is_null() {
-                        return None;
-                    }
-                    Box::from_raw(ptr
-                        as *const _ as *mut String)
-                };
+            let val = unsafe {
+                let ptr = child.raw_user_data();
+                if ptr.is_null() {
+                    return None;
+                }
+                Box::from_raw(ptr as *const _ as *mut String)
+            };
             return Some(*val);
         }
     }

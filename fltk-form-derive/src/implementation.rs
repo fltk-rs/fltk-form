@@ -15,13 +15,13 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                     let field_name = &field.ident;
                     let span = field_name.span();
                     let field_name_stringified = LitStr::new(&field_name.to_string(), span);
-                    quote_spanned! { 
+                    quote_spanned! {
                         span=> {
                             #field_name_stringified
                         }
                     }
                 });
-        
+
                 gen = quote! {
                     impl FltkForm for #name {
                         fn generate(&self) -> Box<dyn WidgetExt> {
@@ -33,10 +33,8 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                             choice.set_value(*self as i32);
                             let val = format!("{:?}", *self);
                             unsafe {
-                                app::set_raw_callback(
-                                    &mut choice,
+                                choice.set_raw_user_data(
                                     Box::into_raw(Box::new(val)) as *mut std::os::raw::c_void,
-                                    None,
                                 );
                             }
                             Box::new(choice)
@@ -53,27 +51,31 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                     let field_name = field.ident.as_ref().expect("Unreachable");
                     let span = field_name.span();
                     let field_name_stringified = LitStr::new(&field_name.to_string(), span);
-                    quote_spanned! { 
+                    quote_spanned! {
                         span=> {
                             let mut i = self.#field_name.generate();
                             i.set_label(#field_name_stringified);
                         }
                     }
                 });
-        
+
                 gen = quote! {
                     impl FltkForm for #name {
                         fn generate(&self) -> Box<dyn WidgetExt> {
-                            let mut flex = group::Flex::default().column().with_label(&format!("{}", #name_str)).with_align(fltk::enums::Align::Left | fltk::enums::Align::Top);
+                            let mut flex = group::Flex::default().column()
+                                .with_label(&format!("{}", #name_str))
+                                .with_align(fltk::enums::Align::Left | fltk::enums::Align::Top);
                             let mems = vec![#(#data_expanded_members),*];
                             flex.end();
-                            flex.resize(flex.x(), flex.y(), flex.parent().unwrap().width() * 2 / 3, (mems.len() * 30) as i32);
+                            flex.resize(
+                                flex.x(), flex.y(), flex.parent().unwrap().width() * 2 / 3, (mems.len() * 30) as i32
+                            );
                             let flex = flex.center_of_parent();
                             Box::new(flex)
                         }
                     }
                 };
-            },
+            }
 
             _ => {
                 return Err(Error::new(

@@ -5,7 +5,7 @@ This crate aims to simplify generating gui from a data structure.
 ## Usage
 ```toml
 [dependencies]
-fltk = "1.2"
+fltk = { git = "https://github.com/fltk-rs/fltk-rs" }
 fltk-form = { git = "https://github.com/MoAlyousef/fltk-form" }
 fltk-form-derive = { git = "https://github.com/MoAlyousef/fltk-form" }
 ```
