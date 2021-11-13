@@ -1,3 +1,74 @@
+/*!
+    # fltk-form
+
+    This crate aims to simplify generating gui from a data structure.
+
+    ## Usage
+    ```toml,no_run
+    [dependencies]
+    fltk = "1.2"
+    fltk-form = { git = "https://github.com/MoAlyousef/fltk-form" }
+    fltk-form-derive = { git = "https://github.com/MoAlyousef/fltk-form" }
+    ```
+
+    ## Example
+    ```rust
+    #[macro_use]
+    extern crate fltk_form_derive;
+
+    use fltk::{prelude::*, *};
+    use fltk_form::{FltkForm, HasProps};
+
+    #[derive(Copy, Debug, Clone, FltkForm)]
+    pub enum MyEnum {
+        A,
+        B,
+        C,
+    }
+
+    #[derive(Debug, Clone, FltkForm)]
+    pub struct MyStruct {
+        a: f64,
+        b: f64,
+        c: String,
+        d: MyEnum,
+        e: bool,
+    }
+
+    impl MyStruct {
+        pub fn new() -> Self {
+            Self {
+                a: 0.0,
+                b: 3.0,
+                c: String::new(),
+                d: MyEnum::A,
+                e: true,
+            }
+        }
+    }
+
+    fn main() {
+        let s = MyStruct::new();
+        
+        let a = app::App::default().with_scheme(app::Scheme::Gtk);
+        app::set_background_color(222, 222, 222);
+        
+        let mut win = window::Window::default().with_size(400, 300);
+        let mut grp = group::Group::default().with_size(300, 200).center_of_parent();
+        let w = s.generate();
+        grp.end();
+        grp.set_frame(enums::FrameType::EngravedFrame);
+        win.end();
+        win.show();
+
+        let v = w.get_prop("b");
+        assert_eq!(v, Some("3.0".to_owned()));
+
+        a.run().unwrap();
+    }
+    ```
+*/
+
 use fltk::{prelude::*, *};
 use fltk_sys::widget;
 use std::os::raw;
@@ -74,7 +145,7 @@ impl FltkForm for String {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::Input::default();
         let val = self.clone();
-        i.set_value(&val.clone());
+        i.set_value(&val);
         unsafe {
             app::set_raw_callback(
                 &mut i,
@@ -103,6 +174,7 @@ impl FltkForm for bool {
     }
 }
 
+#[allow(clippy::borrowed_box)]
 fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
     let wid = unsafe { wid.as_widget_ptr() };
     let grp = unsafe { group::Group::from_widget_ptr(wid as _) };
@@ -110,7 +182,11 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
         if child.label() == prop {
             let val =
                 unsafe {
-                    Box::from_raw(widget::Fl_Widget_user_data(child.as_widget_ptr() as _)
+                    let ptr = widget::Fl_Widget_user_data(child.as_widget_ptr() as _);
+                    if ptr.is_null() {
+                        return None;
+                    }
+                    Box::from_raw(ptr
                         as *const _ as *mut String)
                 };
             return Some(*val);
