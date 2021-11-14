@@ -46,12 +46,12 @@ fn main() {
     let form = my_struct.generate(); // <-- generate the form
     
     grp.end();
+    grp.set_frame(enums::FrameType::EngravedFrame);
     let mut btn = button::Button::default()
         .with_label("print")
         .with_size(80, 30)
         .below_of(&grp, 5)
         .center_x(&grp);
-    grp.set_frame(enums::FrameType::EngravedFrame);
     win.end();
     win.show();
 

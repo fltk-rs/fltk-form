@@ -161,53 +161,66 @@ impl FltkForm for bool {
 }
 
 #[allow(clippy::borrowed_box)]
-fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
-    let wid = unsafe { wid.as_widget_ptr() };
-    let grp = unsafe { group::Group::from_widget_ptr(wid as _) };
-    for child in grp.into_iter() {
-        if child.label() == prop {
-            let val = unsafe {
-                let ptr = child.raw_user_data();
-                if ptr.is_null() {
-                    return None;
-                }
-                ptr as usize
-            };
-            match val {
-                1 => {
-                    let inp = unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
-                    return Some(inp.value());
-                }
-                2 => {
-                    let inp =
-                        unsafe { button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _) };
-                    return Some(format!("{}", inp.value()));
-                }
-                3 => {
-                    let choice =
-                        unsafe { menu::Choice::from_widget_ptr(child.as_widget_ptr() as _) };
-                    return choice.choice();
-                }
-                _ => {
-                    return None;
-                }
+fn rename_prop_(wid: &Box<dyn WidgetExt>, prop: &str, new_name: &str) {
+    if let Some(grp) = wid.as_group() {
+        for mut child in grp.into_iter() {
+            if child.label() == prop {
+                child.set_label(new_name);
             }
         }
     }
-    None
+}
+
+#[allow(clippy::borrowed_box)]
+fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
+    if let Some(grp) = wid.as_group() {
+        for child in grp.into_iter() {
+            if child.label() == prop {
+                let val = unsafe {
+                    let ptr = child.raw_user_data();
+                    if ptr.is_null() {
+                        return None;
+                    }
+                    ptr as usize
+                };
+                match val {
+                    1 => {
+                        let inp = unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
+                        return Some(inp.value());
+                    }
+                    2 => {
+                        let inp =
+                            unsafe { button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _) };
+                        return Some(format!("{}", inp.value()));
+                    }
+                    3 => {
+                        let choice =
+                            unsafe { menu::Choice::from_widget_ptr(child.as_widget_ptr() as _) };
+                        return choice.choice();
+                    }
+                    _ => {
+                        return None;
+                    }
+                }
+            }
+        }
+        None
+    } else {
+        None
+    }
 }
 
 #[allow(clippy::borrowed_box)]
 fn get_props_(wid: &Box<dyn WidgetExt>) -> HashMap<String, String> {
-    let w = unsafe { wid.as_widget_ptr() };
-    let grp = unsafe { group::Group::from_widget_ptr(w as _) };
     let mut temp = HashMap::new();
-    for child in grp.into_iter() {
-        if !child.label().is_empty() {
-            temp.insert(
-                child.label().clone(),
-                get_prop_(wid, &child.label()).unwrap(),
-            );
+    if let Some(grp) = wid.as_group() {
+        for child in grp.into_iter() {
+            if !child.label().is_empty() {
+                temp.insert(
+                    child.label().clone(),
+                    get_prop_(wid, &child.label()).unwrap(),
+                );
+            }
         }
     }
     temp
@@ -216,6 +229,7 @@ fn get_props_(wid: &Box<dyn WidgetExt>) -> HashMap<String, String> {
 pub trait HasProps {
     fn get_prop(&self, prop: &str) -> Option<String>;
     fn get_props(&self) -> HashMap<String, String>;
+    fn rename_prop(&mut self, prop: &str, new_name: &str);
 }
 
 impl HasProps for Box<dyn WidgetExt> {
@@ -224,5 +238,8 @@ impl HasProps for Box<dyn WidgetExt> {
     }
     fn get_props(&self) -> HashMap<String, String> {
         get_props_(self)
+    }
+    fn rename_prop(&mut self, prop: &str, new_name: &str) {
+        rename_prop_(self, prop, new_name);
     }
 }

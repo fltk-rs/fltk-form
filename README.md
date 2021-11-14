@@ -88,3 +88,5 @@ fn main() {
 ```
 
 ![alt_test](https://github.com/MoAlyousef/fltk-form/raw/main/screenshots/form.jpg)
+
+![alt_test](https://github.com/MoAlyousef/fltk-form/raw/main/screenshots/form2.jpg)
