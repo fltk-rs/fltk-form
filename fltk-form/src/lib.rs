@@ -84,6 +84,118 @@ use fltk::{prelude::*, *};
 use std::collections::HashMap;
 use std::mem::transmute;
 
+#[derive(Clone, Debug)]
+pub struct Form {
+    grp: group::Group,
+}
+
+impl Default for Form {
+    fn default() -> Self {
+        Form::new(0, 0, 0, 0, None)
+    }
+}
+
+impl Form {
+    pub fn new<S: Into<Option<&'static str>>>(x: i32, y: i32, w: i32, h: i32, label: S) -> Self {
+        let mut grp = group::Group::new(x, y, w, h, label);
+        grp.set_frame(enums::FrameType::EngravedBox);
+        Self {
+            grp
+        }
+    }
+
+    pub fn default_fill() -> Self {
+        Form::default().size_of_parent().center_of_parent()
+    }
+
+    pub fn set_data<T: FltkForm>(&mut self, data: T) {
+        self.begin();
+        let mut w = data.generate();
+        w.resize(self.x(), self.y(), self.w(), self.h());
+        self.end();
+    }
+
+    pub fn from_data<T: FltkForm>(mut self, data: T) -> Self {
+        self.set_data(data);
+        self
+    }
+
+    pub fn get_prop(&self, prop: &str) -> Option<String> {
+        if let Some(child) = self.grp.child(0) {
+            if let Some(grp) = child.as_group() {
+                for child in grp.into_iter() {
+                    if child.label() == prop {
+                        let val = unsafe {
+                            let ptr = child.raw_user_data();
+                            if ptr.is_null() {
+                                return None;
+                            }
+                            ptr as usize
+                        };
+                        match val {
+                            1 => {
+                                let inp = unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
+                                return Some(inp.value());
+                            }
+                            2 => {
+                                let inp =
+                                    unsafe { button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _) };
+                                return Some(format!("{}", inp.value()));
+                            }
+                            3 => {
+                                let choice =
+                                    unsafe { menu::Choice::from_widget_ptr(child.as_widget_ptr() as _) };
+                                return choice.choice();
+                            }
+                            _ => {
+                                return None;
+                            }
+                        }
+                    }
+                }
+                None
+            } else {
+                None
+            }
+        } else {
+            None
+        }
+    }
+    
+    pub fn get_props(&self) -> HashMap<String, String> {
+        let mut temp = HashMap::new();
+        if let Some(c) = self.grp.child(0) {
+            if let Some(grp) = c.as_group() {
+                for child in grp.into_iter() {
+                    if !child.label().is_empty() {
+                        if let Some(prop) = self.get_prop(&child.label()) {
+                            temp.insert(
+                                child.label().clone(),
+                                prop,
+                            );
+                        }
+                    }
+                }
+            }
+        }
+        temp
+    }
+
+    pub fn rename_prop(&self, prop: &str, new_name: &str) {
+        if let Some(child) = self.grp.child(0) {
+            if let Some(grp) = child.as_group() {
+                for mut child in grp.into_iter() {
+                    if child.label() == prop {
+                        child.set_label(new_name);
+                    }
+                }
+            }
+        }
+    }
+}
+
+fltk::widget_extends!(Form, group::Group, grp);
+
 pub trait FltkForm {
     fn generate(&self) -> Box<dyn WidgetExt>;
 }
@@ -124,7 +236,103 @@ impl FltkForm for i32 {
     }
 }
 
+impl FltkForm for u32 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
 impl FltkForm for i64 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for u64 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for isize {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for usize {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for i8 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for u8 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for i16 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for u16 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
@@ -157,6 +365,17 @@ impl FltkForm for bool {
             i.set_raw_user_data(transmute(2_usize));
         }
         Box::new(i)
+    }
+}
+
+impl<T> FltkForm for Vec<T> where T: FltkForm {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let flex = group::Flex::default().column();
+        for v in self.iter() {
+            v.generate();
+        }
+        flex.end();
+        Box::new(flex)
     }
 }
 
@@ -216,10 +435,12 @@ fn get_props_(wid: &Box<dyn WidgetExt>) -> HashMap<String, String> {
     if let Some(grp) = wid.as_group() {
         for child in grp.into_iter() {
             if !child.label().is_empty() {
-                temp.insert(
-                    child.label().clone(),
-                    get_prop_(wid, &child.label()).unwrap(),
-                );
+                if let Some(prop) = get_prop_(wid, &child.label()) {
+                    temp.insert(
+                        child.label().clone(),
+                        prop,
+                    );
+                }
             }
         }
     }
