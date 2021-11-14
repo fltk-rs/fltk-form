@@ -3,8 +3,6 @@
 This crate aims to simplify generating gui from a data structure.
 
 ## Usage
-(Not yet released, so the following will not work)
-
 ```toml
 [dependencies]
 fltk = "1.2.16"
@@ -12,7 +10,7 @@ fltk-form = "0.1"
 fltk-form-derive = "0.1"
 ```
 
-But you can git clone the repo and run the example directly:
+You can also `git clone` the repo and run the example directly:
 ```
 $ cargo run --example basic
 ```
@@ -87,6 +85,6 @@ fn main() {
 }
 ```
 
-![alt_test](https://github.com/MoAlyousef/fltk-form/raw/main/screenshots/form.jpg)
+![alt_test](https://github.com/fltk-rs/fltk-form/raw/main/screenshots/form.jpg)
 
-![alt_test](https://github.com/MoAlyousef/fltk-form/raw/main/screenshots/form2.jpg)
+![alt_test](https://github.com/fltk-rs/fltk-form/raw/main/screenshots/form2.jpg)

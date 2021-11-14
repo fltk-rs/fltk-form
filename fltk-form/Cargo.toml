@@ -12,5 +12,5 @@ readme = "../README.md"
 license = "MIT"
 
 [dependencies]
-fltk = { git = "https://github.com/fltk-rs/fltk-rs" }
+fltk = "1.2.16"
 fltk-form-derive = { version = "=0.1.0", path = "../fltk-form-derive" }
