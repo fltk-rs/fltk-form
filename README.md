@@ -42,7 +42,7 @@ pub struct MyStruct {
 }
 
 impl MyStruct {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self {
             a: 0.0,
             b: 3.0,
@@ -54,7 +54,7 @@ impl MyStruct {
 }
 
 fn main() {
-    let my_struct = MyStruct::new(); // <-- instantiate your struct
+    let my_struct = MyStruct::default(); // <-- instantiate your struct
 
     let a = app::App::default().with_scheme(app::Scheme::Gtk);
     app::set_background_color(222, 222, 222);

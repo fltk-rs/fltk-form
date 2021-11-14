@@ -22,7 +22,7 @@ pub struct MyStruct {
 }
 
 impl MyStruct {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self {
             very_long_name: 0.0,
             second_value: 3.0,
@@ -34,7 +34,7 @@ impl MyStruct {
 }
 
 fn main() {
-    let my_struct = MyStruct::new();
+    let my_struct = MyStruct::default();
 
     let a = app::App::default().with_scheme(app::Scheme::Gtk);
     app::set_background_color(222, 222, 222);

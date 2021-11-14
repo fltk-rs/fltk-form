@@ -21,7 +21,7 @@ pub struct MyStruct {
 }
 
 impl MyStruct {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self {
             a: 0.0,
             b: 3.0,
@@ -33,7 +33,7 @@ impl MyStruct {
 }
 
 fn main() {
-    let my_struct = MyStruct::new(); // <-- instantiate your struct
+    let my_struct = MyStruct::default(); // <-- instantiate your struct
 
     let a = app::App::default().with_scheme(app::Scheme::Gtk);
     app::set_background_color(222, 222, 222);
@@ -45,7 +45,7 @@ fn main() {
 
     let mut form = my_struct.generate(); // <-- generate the form
     form.resize(form.x() - 50, form.y(), form.w() + 30, form.h());
-    
+
     grp.end();
     grp.set_frame(enums::FrameType::EngravedFrame);
     let mut btn = button::Button::default()

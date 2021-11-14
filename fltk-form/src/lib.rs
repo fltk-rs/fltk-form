@@ -36,7 +36,7 @@
     }
 
     impl MyStruct {
-        pub fn new() -> Self {
+        pub fn default() -> Self {
             Self {
                 a: 0.0,
                 b: 3.0,
@@ -48,7 +48,7 @@
     }
 
     fn main() {
-        let my_struct = MyStruct::new();
+        let my_struct = MyStruct::default();
 
         let a = app::App::default().with_scheme(app::Scheme::Gtk);
         app::set_background_color(222, 222, 222);
@@ -99,9 +99,7 @@ impl Form {
     pub fn new<S: Into<Option<&'static str>>>(x: i32, y: i32, w: i32, h: i32, label: S) -> Self {
         let grp = group::Group::new(x, y, w, h, label);
         grp.end();
-        Self {
-            grp
-        }
+        Self { grp }
     }
 
     pub fn default_fill() -> Self {
@@ -120,6 +118,18 @@ impl Form {
         self
     }
 
+    pub fn set_data_view<T: FltkForm>(&mut self, data: T) {
+        self.begin();
+        let mut w = data.view();
+        w.resize(self.x(), self.y(), self.w(), self.h());
+        self.end();
+    }
+
+    pub fn from_data_view<T: FltkForm>(mut self, data: T) -> Self {
+        self.set_data_view(data);
+        self
+    }
+
     pub fn get_prop(&self, prop: &str) -> Option<String> {
         if let Some(child) = self.grp.child(0) {
             if let Some(grp) = child.as_group() {
@@ -134,17 +144,21 @@ impl Form {
                         };
                         match val {
                             1 => {
-                                let inp = unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
+                                let inp = unsafe {
+                                    input::Input::from_widget_ptr(child.as_widget_ptr() as _)
+                                };
                                 return Some(inp.value());
                             }
                             2 => {
-                                let inp =
-                                    unsafe { button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _) };
+                                let inp = unsafe {
+                                    button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
+                                };
                                 return Some(format!("{}", inp.value()));
                             }
                             3 => {
-                                let choice =
-                                    unsafe { menu::Choice::from_widget_ptr(child.as_widget_ptr() as _) };
+                                let choice = unsafe {
+                                    menu::Choice::from_widget_ptr(child.as_widget_ptr() as _)
+                                };
                                 return choice.choice();
                             }
                             _ => {
@@ -169,10 +183,7 @@ impl Form {
                 for child in grp.into_iter() {
                     if !child.label().is_empty() {
                         if let Some(prop) = self.get_prop(&child.label()) {
-                            temp.insert(
-                                child.label().clone(),
-                                prop,
-                            );
+                            temp.insert(child.label().clone(), prop);
                         }
                     }
                 }
@@ -198,11 +209,21 @@ fltk::widget_extends!(Form, group::Group, grp);
 
 pub trait FltkForm {
     fn generate(&self) -> Box<dyn WidgetExt>;
+    fn view(&self) -> Box<dyn WidgetExt>;
 }
 
 impl FltkForm for f64 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::FloatInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
@@ -222,11 +243,29 @@ impl FltkForm for f32 {
         }
         Box::new(i)
     }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
 }
 
 impl FltkForm for i32 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
@@ -246,11 +285,29 @@ impl FltkForm for u32 {
         }
         Box::new(i)
     }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
 }
 
 impl FltkForm for i64 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
@@ -270,11 +327,29 @@ impl FltkForm for u64 {
         }
         Box::new(i)
     }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
 }
 
 impl FltkForm for isize {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
@@ -294,11 +369,29 @@ impl FltkForm for usize {
         }
         Box::new(i)
     }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
 }
 
 impl FltkForm for i8 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
@@ -318,11 +411,29 @@ impl FltkForm for u8 {
         }
         Box::new(i)
     }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
 }
 
 impl FltkForm for i16 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
@@ -342,13 +453,29 @@ impl FltkForm for u16 {
         }
         Box::new(i)
     }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
 }
 
 impl FltkForm for String {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::Input::default();
-        let val = self.clone();
-        i.set_value(&val);
+        i.set_value(self);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        i.set_value(self);
         unsafe {
             i.set_raw_user_data(transmute(1_usize));
         }
@@ -358,6 +485,10 @@ impl FltkForm for String {
 
 impl FltkForm for &str {
     fn generate(&self) -> Box<dyn WidgetExt> {
+        let i = frame::Frame::default().with_label(self);
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
         let i = frame::Frame::default().with_label(self);
         Box::new(i)
     }
@@ -373,14 +504,37 @@ impl FltkForm for bool {
         }
         Box::new(i)
     }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default().with_align(enums::Align::Left);
+        i.set_value(&format!("{}", *self));
+        i.clear_visible_focus();
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
 }
 
-impl<T> FltkForm for Vec<T> where T: FltkForm {
+impl<T> FltkForm for Vec<T>
+where
+    T: FltkForm,
+{
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut g = group::Pack::default();
         g.set_spacing(5);
         for v in self.iter() {
             let mut w = v.generate();
+            w.set_align(enums::Align::Left);
+            w.set_size(w.w(), 30);
+        }
+        g.end();
+        Box::new(g)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut g = group::Pack::default();
+        g.set_spacing(5);
+        for v in self.iter() {
+            let mut w = v.view();
             w.set_align(enums::Align::Left);
             w.set_size(w.w(), 30);
         }
@@ -414,12 +568,14 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
                 };
                 match val {
                     1 => {
-                        let inp = unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
+                        let inp =
+                            unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
                         return Some(inp.value());
                     }
                     2 => {
-                        let inp =
-                            unsafe { button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _) };
+                        let inp = unsafe {
+                            button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
+                        };
                         return Some(format!("{}", inp.value()));
                     }
                     3 => {
@@ -446,10 +602,7 @@ fn get_props_(wid: &Box<dyn WidgetExt>) -> HashMap<String, String> {
         for child in grp.into_iter() {
             if !child.label().is_empty() {
                 if let Some(prop) = get_prop_(wid, &child.label()) {
-                    temp.insert(
-                        child.label().clone(),
-                        prop,
-                    );
+                    temp.insert(child.label().clone(), prop);
                 }
             }
         }

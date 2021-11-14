@@ -2,7 +2,7 @@
 extern crate fltk_form_derive;
 
 use fltk::{prelude::*, *};
-use fltk_form::{Form, FltkForm};
+use fltk_form::{FltkForm, Form};
 
 #[derive(Copy, Debug, Clone, FltkForm)]
 pub enum MyEnum {
@@ -21,7 +21,7 @@ pub struct MyStruct {
 }
 
 impl MyStruct {
-    pub fn new() -> Self {
+    pub fn default() -> Self {
         Self {
             a: 0.0,
             b: 3.0,
@@ -33,15 +33,18 @@ impl MyStruct {
 }
 
 fn main() {
-    let my_struct = MyStruct::new(); // <-- instantiate your struct
+    let my_struct = MyStruct::default(); // <-- instantiate your struct
 
     let a = app::App::default().with_scheme(app::Scheme::Gtk);
     app::set_background_color(222, 222, 222);
 
     let mut win = window::Window::default().with_size(400, 300);
 
-    let mut form = Form::default().with_size(200, 200).center_of_parent().from_data(my_struct);
-    
+    let mut form = Form::default()
+        .with_size(200, 200)
+        .center_of_parent()
+        .from_data(my_struct);
+
     let mut btn = button::Button::default()
         .with_label("print")
         .with_size(80, 30)
