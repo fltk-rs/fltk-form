@@ -7,9 +7,9 @@ This crate aims to simplify generating gui from a data structure.
 
 ```toml
 [dependencies]
-fltk = 1.2.16
-fltk-form = 0.1
-fltk-form-derive = 0.1
+fltk = "1.2.16"
+fltk-form = "0.1"
+fltk-form-derive = "0.1"
 ```
 
 But you can git clone the repo and run the example directly:

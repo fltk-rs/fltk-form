@@ -6,9 +6,9 @@
     ## Usage
     ```toml,no_run
     [dependencies]
-    fltk = 1.2.16
-    fltk-form = 0.1
-    fltk-form-derive = 0.1
+    fltk = "1.2.16"
+    fltk-form = "0.1"
+    fltk-form-derive = "0.1"
     ```
 
     ## Example
