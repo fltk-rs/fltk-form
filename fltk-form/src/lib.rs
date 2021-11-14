@@ -160,20 +160,44 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
                 if ptr.is_null() {
                     return None;
                 }
-                Box::from_raw(ptr as *const _ as *mut String)
+                ptr as *const _ as *mut String
             };
-            return Some(*val);
+            unsafe {
+                return Some((*val).clone());
+            }
         }
     }
     None
 }
 
+#[allow(clippy::borrowed_box)]
+fn get_props_(wid: &Box<dyn WidgetExt>) -> Vec<(String, String)> {
+    let wid = unsafe { wid.as_widget_ptr() };
+    let grp = unsafe { group::Group::from_widget_ptr(wid as _) };
+    let mut temp = vec![];
+    for child in grp.into_iter() {
+        if !child.label().is_empty() && unsafe { !child.raw_user_data().is_null() } {
+            unsafe {
+                temp.push((
+                    child.label().clone(),
+                    (*(child.raw_user_data() as *const _ as *mut String)).clone(),
+                ));
+            }
+        }
+    }
+    temp
+}
+
 pub trait HasProps {
     fn get_prop(&self, prop: &str) -> Option<String>;
+    fn get_props(&self) -> Vec<(String, String)>;
 }
 
 impl HasProps for Box<dyn WidgetExt> {
     fn get_prop(&self, prop: &str) -> Option<String> {
         get_prop_(self, prop)
+    }
+    fn get_props(&self) -> Vec<(String, String)> {
+        get_props_(self)
     }
 }
