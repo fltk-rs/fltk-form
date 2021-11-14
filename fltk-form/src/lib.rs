@@ -70,7 +70,8 @@
 */
 
 use fltk::{prelude::*, *};
-use std::os::raw;
+use std::collections::HashMap;
+use std::mem::transmute;
 
 pub trait FltkForm {
     fn generate(&self) -> Box<dyn WidgetExt>;
@@ -82,7 +83,7 @@ impl FltkForm for f64 {
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
-            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
+            i.set_raw_user_data(transmute(1_usize));
         }
         Box::new(i)
     }
@@ -94,7 +95,7 @@ impl FltkForm for f32 {
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
-            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
+            i.set_raw_user_data(transmute(1_usize));
         }
         Box::new(i)
     }
@@ -106,7 +107,7 @@ impl FltkForm for i32 {
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
-            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
+            i.set_raw_user_data(transmute(1_usize));
         }
         Box::new(i)
     }
@@ -118,7 +119,7 @@ impl FltkForm for i64 {
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
-            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
+            i.set_raw_user_data(transmute(1_usize));
         }
         Box::new(i)
     }
@@ -130,7 +131,7 @@ impl FltkForm for String {
         let val = self.clone();
         i.set_value(&val);
         unsafe {
-            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
+            i.set_raw_user_data(transmute(1_usize));
         }
         Box::new(i)
     }
@@ -139,11 +140,10 @@ impl FltkForm for String {
 impl FltkForm for bool {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = button::CheckButton::default().with_align(enums::Align::Left);
-        let val = format!("{:?}", *self);
         i.set_value(*self);
         i.clear_visible_focus();
         unsafe {
-            i.set_raw_user_data(Box::into_raw(Box::new(val)) as *mut raw::c_void);
+            i.set_raw_user_data(transmute(2_usize));
         }
         Box::new(i)
     }
@@ -160,10 +160,26 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
                 if ptr.is_null() {
                     return None;
                 }
-                ptr as *const _ as *mut String
+                ptr as usize
             };
-            unsafe {
-                return Some((*val).clone());
+            match val {
+                1 => {
+                    let inp = unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
+                    return Some(inp.value());
+                }
+                2 => {
+                    let inp =
+                        unsafe { button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _) };
+                    return Some(format!("{}", inp.value()));
+                }
+                3 => {
+                    let choice =
+                        unsafe { menu::Choice::from_widget_ptr(child.as_widget_ptr() as _) };
+                    return choice.choice();
+                }
+                _ => {
+                    return None;
+                }
             }
         }
     }
@@ -171,18 +187,16 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
 }
 
 #[allow(clippy::borrowed_box)]
-fn get_props_(wid: &Box<dyn WidgetExt>) -> Vec<(String, String)> {
-    let wid = unsafe { wid.as_widget_ptr() };
-    let grp = unsafe { group::Group::from_widget_ptr(wid as _) };
-    let mut temp = vec![];
+fn get_props_(wid: &Box<dyn WidgetExt>) -> HashMap<String, String> {
+    let w = unsafe { wid.as_widget_ptr() };
+    let grp = unsafe { group::Group::from_widget_ptr(w as _) };
+    let mut temp = HashMap::new();
     for child in grp.into_iter() {
-        if !child.label().is_empty() && unsafe { !child.raw_user_data().is_null() } {
-            unsafe {
-                temp.push((
-                    child.label().clone(),
-                    (*(child.raw_user_data() as *const _ as *mut String)).clone(),
-                ));
-            }
+        if !child.label().is_empty() {
+            temp.insert(
+                child.label().clone(),
+                get_prop_(wid, &child.label()).unwrap(),
+            );
         }
     }
     temp
@@ -190,14 +204,14 @@ fn get_props_(wid: &Box<dyn WidgetExt>) -> Vec<(String, String)> {
 
 pub trait HasProps {
     fn get_prop(&self, prop: &str) -> Option<String>;
-    fn get_props(&self) -> Vec<(String, String)>;
+    fn get_props(&self) -> HashMap<String, String>;
 }
 
 impl HasProps for Box<dyn WidgetExt> {
     fn get_prop(&self, prop: &str) -> Option<String> {
         get_prop_(self, prop)
     }
-    fn get_props(&self) -> Vec<(String, String)> {
+    fn get_props(&self) -> HashMap<String, String> {
         get_props_(self)
     }
 }

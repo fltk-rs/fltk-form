@@ -33,9 +33,7 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                             choice.set_value(*self as i32);
                             let val = format!("{:?}", *self);
                             unsafe {
-                                choice.set_raw_user_data(
-                                    Box::into_raw(Box::new(val)) as *mut std::os::raw::c_void,
-                                );
+                                choice.set_raw_user_data(std::mem::transmute(3 as usize));
                             }
                             Box::new(choice)
                         }
