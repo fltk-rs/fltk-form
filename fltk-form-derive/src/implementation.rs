@@ -65,10 +65,10 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                                 .with_align(fltk::enums::Align::Left | fltk::enums::Align::Top);
                             let mems = vec![#(#data_expanded_members),*];
                             flex.end();
+                            let parent = flex.parent().unwrap();
                             flex.resize(
-                                flex.x(), flex.y(), flex.parent().unwrap().width() * 2 / 3, (mems.len() * 30) as i32
+                                parent.x() + (parent.width()/2), parent.y() + parent.h() / 6, parent.width() / 3, (mems.len() * 30) as i32
                             );
-                            let flex = flex.center_of_parent();
                             Box::new(flex)
                         }
                     }

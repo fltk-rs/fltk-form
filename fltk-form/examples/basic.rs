@@ -43,7 +43,8 @@ fn main() {
         .with_size(300, 200)
         .center_of_parent();
 
-    let form = my_struct.generate(); // <-- generate the form
+    let mut form = my_struct.generate(); // <-- generate the form
+    form.resize(form.x() - 50, form.y(), form.w() + 30, form.h());
     
     grp.end();
     grp.set_frame(enums::FrameType::EngravedFrame);

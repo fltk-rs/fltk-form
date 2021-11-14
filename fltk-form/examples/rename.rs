@@ -47,7 +47,6 @@ fn main() {
         .with_align(enums::Align::Top | enums::Align::Left);
 
     let mut form = my_struct.generate();
-    form.resize(grp.x() + 125, grp.y() + 25, 150, grp.h() - 50);
     form.set_label("");
     form.rename_prop("very_long_name", "First Value");
     form.rename_prop("second_value", "Second Value");
