@@ -52,7 +52,10 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                     quote_spanned! {
                         span=> {
                             let mut i = self.#field_name.generate();
-                            i.set_label(#field_name_stringified);
+                            if unsafe { !i.raw_user_data().is_null() } {
+                                i.set_align(fltk::enums::Align::Left);
+                                i.set_label(#field_name_stringified);
+                            }
                         }
                     }
                 });
@@ -60,16 +63,18 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                 gen = quote! {
                     impl FltkForm for #name {
                         fn generate(&self) -> Box<dyn WidgetExt> {
-                            let mut flex = group::Flex::default().column()
+                            let mut p = group::Pack::default()
                                 .with_label(&format!("{}", #name_str))
                                 .with_align(fltk::enums::Align::Left | fltk::enums::Align::Top);
+                            p.set_spacing(5);
                             let mems = vec![#(#data_expanded_members),*];
-                            flex.end();
-                            let parent = flex.parent().unwrap();
-                            flex.resize(
-                                parent.x() + (parent.width()/2), parent.y() + parent.h() / 6, parent.width() / 3, (mems.len() * 30) as i32
+                            p.end();
+                            let parent = p.parent().unwrap();
+                            p.resize(
+                                parent.x() + (parent.width()/2), parent.y() + parent.h() / 9, parent.width() / 3, (mems.len() * 30 + 5 * mems.len()) as i32
                             );
-                            Box::new(flex)
+                            p.auto_layout();
+                            Box::new(p)
                         }
                     }
                 };

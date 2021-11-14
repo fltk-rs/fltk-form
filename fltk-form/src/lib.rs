@@ -98,6 +98,7 @@ impl Default for Form {
 impl Form {
     pub fn new<S: Into<Option<&'static str>>>(x: i32, y: i32, w: i32, h: i32, label: S) -> Self {
         let grp = group::Group::new(x, y, w, h, label);
+        grp.end();
         Self {
             grp
         }
@@ -355,6 +356,13 @@ impl FltkForm for String {
     }
 }
 
+impl FltkForm for &str {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let i = frame::Frame::default().with_label(self);
+        Box::new(i)
+    }
+}
+
 impl FltkForm for bool {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = button::CheckButton::default().with_align(enums::Align::Left);
@@ -369,12 +377,15 @@ impl FltkForm for bool {
 
 impl<T> FltkForm for Vec<T> where T: FltkForm {
     fn generate(&self) -> Box<dyn WidgetExt> {
-        let flex = group::Flex::default().column();
+        let mut g = group::Pack::default();
+        g.set_spacing(5);
         for v in self.iter() {
-            v.generate();
+            let mut w = v.generate();
+            w.set_align(enums::Align::Left);
+            w.set_size(w.w(), 30);
         }
-        flex.end();
-        Box::new(flex)
+        g.end();
+        Box::new(g)
     }
 }
 

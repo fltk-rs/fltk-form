@@ -40,8 +40,7 @@ fn main() {
 
     let mut win = window::Window::default().with_size(400, 300);
 
-    let form = Form::default().with_size(300, 200).center_of_parent().from_data(my_struct);
-    form.end();
+    let mut form = Form::default().with_size(200, 200).center_of_parent().from_data(my_struct);
     
     let mut btn = button::Button::default()
         .with_label("print")
@@ -50,6 +49,11 @@ fn main() {
         .center_x(&*form);
     win.end();
     win.show();
+
+    form.rename_prop("a", "Longer name");
+    let x = form.x() + 50;
+    let y = form.y();
+    form.set_pos(x, y);
 
     let v = form.get_prop("b"); // <-- get a single property
     assert_eq!(v, Some("3.0".to_owned()));
