@@ -33,7 +33,7 @@ impl MyStruct {
 }
 
 fn main() {
-    let s = MyStruct::new();
+    let my_struct = MyStruct::new(); // <-- instantiate your struct
 
     let a = app::App::default().with_scheme(app::Scheme::Gtk);
     app::set_background_color(222, 222, 222);
@@ -42,7 +42,9 @@ fn main() {
     let mut grp = group::Group::default()
         .with_size(300, 200)
         .center_of_parent();
-    let w = s.generate();
+
+    let form = my_struct.generate(); // <-- generate the form
+    
     grp.end();
     let mut btn = button::Button::default()
         .with_label("print")
@@ -53,11 +55,11 @@ fn main() {
     win.end();
     win.show();
 
-    let v = w.get_prop("b");
+    let v = form.get_prop("b"); // <-- get a single property
     assert_eq!(v, Some("3.0".to_owned()));
 
     btn.set_callback(move |_| {
-        println!("{:?}", w.get_props());
+        println!("{:?}", form.get_props()); // <-- get a HashMap of the properties
     });
 
     a.run().unwrap();
