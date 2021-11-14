@@ -39,19 +39,15 @@ fn main() {
     app::set_background_color(222, 222, 222);
 
     let mut win = window::Window::default().with_size(400, 300);
-    let mut grp = group::Group::default()
-        .with_size(300, 200)
-        .center_of_parent();
 
-    let form = Form::default_fill().from_data(my_struct);
+    let form = Form::default().with_size(300, 200).center_of_parent().from_data(my_struct);
+    form.end();
     
-    grp.end();
-    grp.set_frame(enums::FrameType::EngravedFrame);
     let mut btn = button::Button::default()
         .with_label("print")
         .with_size(80, 30)
-        .below_of(&grp, 5)
-        .center_x(&grp);
+        .below_of(&*form, 5)
+        .center_x(&*form);
     win.end();
     win.show();
 

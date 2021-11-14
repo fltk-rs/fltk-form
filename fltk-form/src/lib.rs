@@ -97,8 +97,7 @@ impl Default for Form {
 
 impl Form {
     pub fn new<S: Into<Option<&'static str>>>(x: i32, y: i32, w: i32, h: i32, label: S) -> Self {
-        let mut grp = group::Group::new(x, y, w, h, label);
-        grp.set_frame(enums::FrameType::EngravedBox);
+        let grp = group::Group::new(x, y, w, h, label);
         Self {
             grp
         }
@@ -161,7 +160,7 @@ impl Form {
             None
         }
     }
-    
+
     pub fn get_props(&self) -> HashMap<String, String> {
         let mut temp = HashMap::new();
         if let Some(c) = self.grp.child(0) {
