@@ -85,7 +85,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::mem::transmute;
 
-/// Error types returned by fltk-rs + wrappers of std errors
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum FltkFormError {
@@ -96,7 +95,6 @@ pub enum FltkFormError {
 unsafe impl Send for FltkFormError {}
 unsafe impl Sync for FltkFormError {}
 
-/// Error kinds enum for `FltkFormError`
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum FltkFormErrorKind {
     PropertyInexistent,
