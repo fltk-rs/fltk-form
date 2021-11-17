@@ -82,7 +82,42 @@
 
 use fltk::{prelude::*, *};
 use std::collections::HashMap;
+use std::fmt;
 use std::mem::transmute;
+
+/// Error types returned by fltk-rs + wrappers of std errors
+#[derive(Debug)]
+#[non_exhaustive]
+pub enum FltkFormError {
+    Internal(FltkFormErrorKind),
+    Unknown(String),
+}
+
+unsafe impl Send for FltkFormError {}
+unsafe impl Sync for FltkFormError {}
+
+/// Error kinds enum for `FltkFormError`
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum FltkFormErrorKind {
+    PropertyInexistent,
+    FailedToChangeData,
+    UnsupportedProperty,
+}
+
+impl std::error::Error for FltkFormError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
+impl fmt::Display for FltkFormError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            FltkFormError::Internal(ref err) => write!(f, "An internal error occured {:?}", err),
+            FltkFormError::Unknown(ref err) => write!(f, "An unknown error occurred {:?}", err),
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct Form {
@@ -174,6 +209,57 @@ impl Form {
         } else {
             None
         }
+    }
+
+    pub fn set_prop(&mut self, prop: &str, value: &str) -> Result<(), FltkFormError> {
+        let mut found = false;
+        if let Some(child) = self.grp.child(0) {
+            if let Some(grp) = child.as_group() {
+                for child in grp.into_iter() {
+                    if child.label() == prop {
+                        found = true;
+                        let val = unsafe {
+                            let ptr = child.raw_user_data();
+                            if ptr.is_null() {
+                                return Err(FltkFormError::Internal(
+                                    FltkFormErrorKind::FailedToChangeData,
+                                ));
+                            }
+                            ptr as usize
+                        };
+                        match val {
+                            1 => {
+                                let mut inp = unsafe {
+                                    input::Input::from_widget_ptr(child.as_widget_ptr() as _)
+                                };
+                                inp.set_value(value);
+                            }
+                            2 => {
+                                let mut inp = unsafe {
+                                    button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
+                                };
+                                let v = value == "true";
+                                inp.set_value(v);
+                            }
+                            3 => {
+                                let mut choice = unsafe {
+                                    menu::Choice::from_widget_ptr(child.as_widget_ptr() as _)
+                                };
+                                let idx = choice.find_index(value);
+                                choice.set_value(idx);
+                            }
+                            _ => (),
+                        }
+                    }
+                }
+            }
+        }
+        if !found {
+            return Err(FltkFormError::Internal(
+                FltkFormErrorKind::PropertyInexistent,
+            ));
+        }
+        Ok(())
     }
 
     pub fn get_props(&self) -> HashMap<String, String> {
@@ -596,6 +682,54 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
 }
 
 #[allow(clippy::borrowed_box)]
+fn set_prop_(wid: &Box<dyn WidgetExt>, prop: &str, value: &str) -> Result<(), FltkFormError> {
+    let mut found = false;
+    if let Some(grp) = wid.as_group() {
+        for child in grp.into_iter() {
+            if child.label() == prop {
+                found = true;
+                let val = unsafe {
+                    let ptr = child.raw_user_data();
+                    if ptr.is_null() {
+                        return Err(FltkFormError::Internal(
+                            FltkFormErrorKind::FailedToChangeData,
+                        ));
+                    }
+                    ptr as usize
+                };
+                match val {
+                    1 => {
+                        let mut inp =
+                            unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
+                        inp.set_value(value);
+                    }
+                    2 => {
+                        let mut inp = unsafe {
+                            button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
+                        };
+                        let v = value == "true";
+                        inp.set_value(v);
+                    }
+                    3 => {
+                        let mut choice =
+                            unsafe { menu::Choice::from_widget_ptr(child.as_widget_ptr() as _) };
+                        let idx = choice.find_index(value);
+                        choice.set_value(idx);
+                    }
+                    _ => (),
+                }
+            }
+        }
+    }
+    if !found {
+        return Err(FltkFormError::Internal(
+            FltkFormErrorKind::PropertyInexistent,
+        ));
+    }
+    Ok(())
+}
+
+#[allow(clippy::borrowed_box)]
 fn get_props_(wid: &Box<dyn WidgetExt>) -> HashMap<String, String> {
     let mut temp = HashMap::new();
     if let Some(grp) = wid.as_group() {
@@ -612,6 +746,7 @@ fn get_props_(wid: &Box<dyn WidgetExt>) -> HashMap<String, String> {
 
 pub trait HasProps {
     fn get_prop(&self, prop: &str) -> Option<String>;
+    fn set_prop(&mut self, prop: &str, value: &str) -> Result<(), FltkFormError>;
     fn get_props(&self) -> HashMap<String, String>;
     fn rename_prop(&mut self, prop: &str, new_name: &str);
 }
@@ -619,6 +754,9 @@ pub trait HasProps {
 impl HasProps for Box<dyn WidgetExt> {
     fn get_prop(&self, prop: &str) -> Option<String> {
         get_prop_(self, prop)
+    }
+    fn set_prop(&mut self, prop: &str, value: &str) -> Result<(), FltkFormError> {
+        set_prop_(self, prop, value)
     }
     fn get_props(&self) -> HashMap<String, String> {
         get_props_(self)
