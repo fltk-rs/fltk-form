@@ -101,7 +101,6 @@ unsafe impl Sync for FltkFormError {}
 pub enum FltkFormErrorKind {
     PropertyInexistent,
     FailedToChangeData,
-    UnsupportedProperty,
 }
 
 impl std::error::Error for FltkFormError {
