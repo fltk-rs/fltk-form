@@ -312,18 +312,6 @@ impl<T:Copy
     + Primitive 
     + Default
     + Debug
-    + AddAssign
-    + Add<Output = T>
-    + Div<Output = T>
-    + DivAssign
-    + Mul<Output = T>
-    + MulAssign
-    + Neg<Output = T>
-    + Rem<Output = T>
-    + RemAssign
-    + Sub<Output = T>
-    + SubAssign
-    + std::cmp::PartialOrd
     + num::NumCast> FltkForm for T {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::FloatInput::default();
