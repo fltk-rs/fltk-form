@@ -39,7 +39,7 @@
         pub fn default() -> Self {
             Self {
                 a: 0.0,
-                b: 3.3,
+                b: 3.0,
                 c: String::new(),
                 d: MyEnum::A,
                 e: true,
@@ -69,7 +69,7 @@
         win.show();
 
         let v = form.get_prop("b");
-        assert_eq!(v, Some("3.3".to_owned()));
+        assert_eq!(v, Some("3.0".to_owned()));
 
         btn.set_callback(move |_| {
             println!("{:?}", form.get_props());
@@ -79,24 +79,11 @@
     }
     ```
 */
-pub trait Primitive {}
-
-macro_rules! primitive {
-    ($($type:ty),*) => {
-        $(impl Primitive for $type {})*
-    }
-}
-
-primitive!(i8, u8, i16, u16, i32, f32, i64, f64, isize, usize);
 
 use fltk::{prelude::*, *};
 use std::collections::HashMap;
 use std::fmt;
-use std::fmt::Debug;
 use std::mem::transmute;
-
-extern crate num;
-use std::ops::{Add, AddAssign,  Div, DivAssign, Mul, MulAssign, Neg, Rem, RemAssign, Sub, SubAssign};
 
 #[derive(Debug)]
 #[non_exhaustive]
@@ -308,13 +295,240 @@ pub trait FltkForm {
     fn view(&self) -> Box<dyn WidgetExt>;
 }
 
-impl<T:Copy
-    + Primitive 
-    + Default
-    + Debug
-    + num::NumCast> FltkForm for T {
+impl FltkForm for f64 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::FloatInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for f32 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::FloatInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for i32 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for u32 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for i64 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for u64 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for isize {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for usize {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for i8 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for u8 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for i16 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let mut i = output::Output::default();
+        let val = format!("{:?}", *self);
+        i.set_value(&val);
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
+
+impl FltkForm for u16 {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
         unsafe {
@@ -351,6 +565,7 @@ impl FltkForm for String {
         Box::new(i)
     }
 }
+
 impl FltkForm for &str {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let i = frame::Frame::default().with_label(self);

@@ -38,7 +38,7 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                         }
                         fn view(&self) -> Box<dyn WidgetExt> {
                             let mut choice = output::Output::default();
-                            choice.set_value(&format!("{:?}", *self as i32));
+                            choice.set_value(&format!("{:?}", *self));
                             unsafe {
                                 choice.set_raw_user_data(std::mem::transmute(1_usize));
                             }

@@ -14,4 +14,3 @@ license = "MIT"
 [dependencies]
 fltk = "1.2.16"
 fltk-form-derive = { version = "=0.1.0", path = "../fltk-form-derive" }
-num = "0.2"
