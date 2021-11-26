@@ -17,7 +17,7 @@
     extern crate fltk_form_derive;
 
     use fltk::{prelude::*, *};
-    use fltk_form::{FltkForm, HasProps};
+    use fltk_form::{FltkForm, HasProps, FlImage};
 
     #[derive(Copy, Debug, Clone, FltkForm)]
     pub enum MyEnum {
@@ -33,6 +33,7 @@
         c: String,
         d: MyEnum,
         e: bool,
+        f:FlImage,
     }
 
     impl MyStruct {
@@ -43,6 +44,7 @@
                 c: String::new(),
                 d: MyEnum::A,
                 e: true,
+                f:FlImage(String::from("examples/orange_circle.svg")),
             }
         }
     }
@@ -54,7 +56,7 @@
         app::set_background_color(222, 222, 222);
 
         let mut win = window::Window::default().with_size(400, 300);
-        let mut grp = group::Group::default()
+        let mut grp = group::Scroll::default()
             .with_size(300, 200)
             .center_of_parent();
         let form = my_struct.generate();
@@ -80,11 +82,52 @@
     ```
 */
 
-use fltk::{prelude::*, *};
+use fltk::{prelude::*, image::*, *};
 use std::collections::HashMap;
 use std::fmt;
+use std::fs;
+
 use std::mem::transmute;
 
+pub fn make_image(filename:&str) -> Option<SharedImage> {
+    let mut image_filename:String = match fs::canonicalize(filename) {
+        Ok(image_filename) => image_filename.to_str().unwrap().to_owned(),
+        Err(e) => {
+            println!("ERROR: {:?}\nFilename:{:?}",e, filename);
+            return None
+        },
+    };
+    println!("image:{:?}",image_filename);
+    let mut image = SharedImage::load(image_filename.as_str());
+    if image.is_ok() {
+        let current_image = image.ok().unwrap();
+        return Some(current_image)
+    }
+    None
+}
+pub fn make_frame(filename:&str) -> frame::Frame {
+    let mut frame = frame::Frame::default();
+    let img = make_image(filename.clone());
+    frame.set_image(img.clone());
+    if let Some(img) = img {
+        let w = img.width();
+        let h = img.height();
+        frame.set_size(w,h);
+        println!("some img");
+    }
+    frame.clone()
+}
+#[derive(Debug, Clone)]
+pub struct FlImage(pub String);
+impl fmt::Display for FlImage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let v:String;
+        match &*self {
+            FlImage(e) => v = e.clone(),
+        }
+        write!(f, "{}", v.as_str())
+    }
+}
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum FltkFormError {
@@ -294,7 +337,24 @@ pub trait FltkForm {
     fn generate(&self) -> Box<dyn WidgetExt>;
     fn view(&self) -> Box<dyn WidgetExt>;
 }
-
+impl FltkForm for FlImage {
+    fn generate(&self) -> Box<dyn WidgetExt> {
+        let val = format!("{}", *self);
+        let mut i = make_frame(val.as_str());
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+    fn view(&self) -> Box<dyn WidgetExt> {
+        let val = format!("{}", *self);
+        let mut i = make_frame(val.as_str());
+        unsafe {
+            i.set_raw_user_data(transmute(1_usize));
+        }
+        Box::new(i)
+    }
+}
 impl FltkForm for f64 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::FloatInput::default();
