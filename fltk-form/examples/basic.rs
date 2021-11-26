@@ -29,7 +29,7 @@ impl MyStruct {
             c: String::from("fltk-rs"),
             d: MyEnum::A,
             e: true,
-            f:FlImage(String::from("/home/israel/programming/rs/fltk-form/fltk-form/examples/orange_circle.svg")),
+            f:FlImage(String::from("fltk-form/examples/orange_circle.svg")),
         }
     }
 }
