@@ -77,7 +77,9 @@
             println!("{:?}", form.get_props());
         });
 
-        a.run().unwrap();
+        while a.wait() {
+            win.redraw();
+        }
     }
     ```
 */
