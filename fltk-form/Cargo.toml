@@ -1,6 +1,6 @@
 [package]
 name = "fltk-form"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2018"
 authors = ["MoAlyousef <mohammed.alyousef@neurosrg.com>"]
 description = "Create fltk gui from a data structure"
@@ -13,4 +13,4 @@ license = "MIT"
 
 [dependencies]
 fltk = "1.2.16"
-fltk-form-derive = { version = "=0.1.0", path = "../fltk-form-derive" }
+fltk-form-derive = { version = "=0.1.1", path = "../fltk-form-derive" }
