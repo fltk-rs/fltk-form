@@ -2,7 +2,7 @@
 extern crate fltk_form_derive;
 
 use fltk::{prelude::*, *};
-use fltk_form::{FltkForm, HasProps};
+use fltk_form::{FltkForm, HasProps, FlImage};
 
 #[derive(Copy, Debug, Clone, FltkForm)]
 pub enum MyEnum {
@@ -18,6 +18,7 @@ pub struct MyStruct {
     c: String,
     d: MyEnum,
     e: bool,
+    f:FlImage,
 }
 
 impl MyStruct {
@@ -25,9 +26,10 @@ impl MyStruct {
         Self {
             a: 0.0,
             b: 3.0,
-            c: String::new(),
+            c: String::from("fltk-rs"),
             d: MyEnum::A,
             e: true,
+            f:FlImage(String::from("fltk-form/examples/orange_circle.svg")),
         }
     }
 }
@@ -39,7 +41,7 @@ fn main() {
     app::set_background_color(222, 222, 222);
 
     let mut win = window::Window::default().with_size(400, 300);
-    let mut grp = group::Group::default()
+    let mut grp = group::Scroll::default()
         .with_size(300, 200)
         .center_of_parent();
 
@@ -63,5 +65,7 @@ fn main() {
         println!("{:?}", form.get_props()); // <-- get a HashMap of the properties
     });
 
-    a.run().unwrap();
+    while a.wait(){
+        win.redraw();
+    }
 }
