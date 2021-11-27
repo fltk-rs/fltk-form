@@ -84,55 +84,36 @@
     ```
 */
 
-use fltk::{prelude::*, image::*, *};
+use fltk::{image::*, prelude::*, *};
 use std::collections::HashMap;
 use std::fmt;
-use std::fs;
-
 use std::mem::transmute;
+use std::path::Path;
 
-pub fn make_image(filename:&str) -> Option<SharedImage> {
-    let mut image_filename:String = match fs::canonicalize(filename) {
-        Ok(image_filename) => image_filename.to_str().unwrap().to_owned(),
-        Err(e) => {
-            println!("ERROR: {:?}\nFilename:{:?}",e, filename);
-            return None
-        },
-    };
-    println!("image:{:?}",image_filename);
-    let mut image = SharedImage::load(image_filename.as_str());
-    if image.is_ok() {
-        let current_image = image.ok().unwrap();
-        return Some(current_image)
-    }
-    None
-}
-pub fn make_frame(filename:&str) -> frame::Frame {
-    let mut frame = frame::Frame::default();
-    let img = make_image(filename.clone());
-    frame.set_image(img.clone());
-    if let Some(img) = img {
+pub fn make_image_frame<P: AsRef<Path>>(filename: P) -> frame::Frame {
+    let mut frame = frame::Frame::default().with_label(filename.as_ref().to_str().unwrap());
+    let img = SharedImage::load(filename).ok();
+    if let Some(ref img) = img {
         let w = img.width();
         let h = img.height();
-        frame.set_size(w,h);
-        println!("some img");
+        frame.set_size(w, h);
     }
-    frame.clone()
+    frame.set_image(img);
+    frame
 }
+
 #[derive(Debug, Clone)]
 pub struct FlImage(pub String);
+
 impl fmt::Display for FlImage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let v:String;
-        match &*self {
-            FlImage(e) => v = e.clone(),
-        }
-        write!(f, "{}", v.as_str())
+        write!(f, "{}", self.0)
     }
 }
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum FltkFormError {
+    FltkError(FltkErrorKind),
     Internal(FltkFormErrorKind),
     Unknown(String),
 }
@@ -157,6 +138,7 @@ impl fmt::Display for FltkFormError {
         match *self {
             FltkFormError::Internal(ref err) => write!(f, "An internal error occured {:?}", err),
             FltkFormError::Unknown(ref err) => write!(f, "An unknown error occurred {:?}", err),
+            FltkFormError::FltkError(ref err) => write!(f, "an fltk error occured {:?}", err),
         }
     }
 }
@@ -239,7 +221,10 @@ impl Form {
                                 return choice.choice();
                             }
                             _ => {
-                                return None;
+                                let wid = unsafe {
+                                    widget::Widget::from_widget_ptr(child.as_widget_ptr() as _)
+                                };
+                                return Some(format!("{}", wid.label()));
                             }
                         }
                     }
@@ -339,24 +324,20 @@ pub trait FltkForm {
     fn generate(&self) -> Box<dyn WidgetExt>;
     fn view(&self) -> Box<dyn WidgetExt>;
 }
+
 impl FltkForm for FlImage {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let val = format!("{}", *self);
-        let mut i = make_frame(val.as_str());
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
+        let mut i = make_image_frame(val.as_str());
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let val = format!("{}", *self);
-        let mut i = make_frame(val.as_str());
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
+        let mut i = make_image_frame(val.as_str());
         Box::new(i)
     }
 }
+
 impl FltkForm for f64 {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::FloatInput::default();
@@ -729,7 +710,10 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
                         return choice.choice();
                     }
                     _ => {
-                        return None;
+                        let wid = unsafe {
+                            widget::Widget::from_widget_ptr(child.as_widget_ptr() as _)
+                        };
+                        return Some(format!("{}", wid.label()));
                     }
                 }
             }
