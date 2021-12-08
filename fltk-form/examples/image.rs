@@ -2,32 +2,19 @@
 extern crate fltk_form_derive;
 
 use fltk::{prelude::*, *};
-use fltk_form::{FltkForm, HasProps};
-
-#[derive(Copy, Debug, Clone, FltkForm)]
-pub enum MyEnum {
-    A,
-    B,
-    C,
-}
+use fltk_form::{FlImage, FltkForm};
 
 #[derive(Debug, Clone, FltkForm)]
 pub struct MyStruct {
-    a: f64,
-    b: f64,
-    c: String,
-    d: MyEnum,
-    e: bool,
+    empty: &'static str, // just to add spacing
+    f: FlImage,
 }
 
 impl MyStruct {
     pub fn default() -> Self {
         Self {
-            a: 0.0,
-            b: 3.0,
-            c: String::from("fltk-rs"),
-            d: MyEnum::A,
-            e: true,
+            empty: "",
+            f: FlImage(String::from("fltk-form/examples/orange_circle.svg")),
         }
     }
 }
@@ -48,20 +35,8 @@ fn main() {
 
     grp.end();
     grp.set_frame(enums::FrameType::EngravedFrame);
-    let mut btn = button::Button::default()
-        .with_label("print")
-        .with_size(80, 30)
-        .below_of(&grp, 5)
-        .center_x(&grp);
     win.end();
     win.show();
-
-    let v = form.get_prop("b"); // <-- get a single property
-    assert_eq!(v, Some("3.0".to_owned()));
-
-    btn.set_callback(move |_| {
-        println!("{:?}", form.get_props()); // <-- get a HashMap of the properties
-    });
 
     while a.wait() {
         win.redraw();

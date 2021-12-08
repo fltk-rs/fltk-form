@@ -1,7 +1,6 @@
 use fltk::{prelude::*, *};
 use fltk_form::{FltkForm, HasProps};
 
-
 #[derive(Debug, Clone)]
 pub struct MyStruct<T> {
     a: T,
@@ -43,15 +42,18 @@ impl<T: Copy + Default + FltkForm> FltkForm for MyStruct<T> {
         p.end();
         let parent = p.parent().unwrap();
         p.resize(
-            parent.x() + (parent.width()/2), parent.y() + parent.h() / 9, parent.width() / 3, (3 * 30 + 5 * 3) as i32
+            parent.x() + (parent.width() / 2),
+            parent.y() + parent.h() / 9,
+            parent.width() / 3,
+            (3 * 30 + 5 * 3) as i32,
         );
         p.auto_layout();
         Box::new(p)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut p = group::Pack::default()
-        .with_label(&format!("{}", "MyStruct"))
-        .with_align(fltk::enums::Align::Left | fltk::enums::Align::Top);
+            .with_label(&format!("{}", "MyStruct"))
+            .with_align(fltk::enums::Align::Left | fltk::enums::Align::Top);
         p.set_spacing(5);
         let mut i = self.a.view();
         if unsafe { !i.raw_user_data().is_null() } {
@@ -71,7 +73,10 @@ impl<T: Copy + Default + FltkForm> FltkForm for MyStruct<T> {
         p.end();
         let parent = p.parent().unwrap();
         p.resize(
-            parent.x() + (parent.width()/2), parent.y() + parent.h() / 9, parent.width() / 3, (3 * 30 + 5 * 3) as i32
+            parent.x() + (parent.width() / 2),
+            parent.y() + parent.h() / 9,
+            parent.width() / 3,
+            (3 * 30 + 5 * 3) as i32,
         );
         p.auto_layout();
         Box::new(p)

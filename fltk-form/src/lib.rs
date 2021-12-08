@@ -91,14 +91,15 @@ use std::mem::transmute;
 use std::path::Path;
 
 pub fn make_image_frame<P: AsRef<Path>>(filename: P) -> frame::Frame {
-    let mut frame = frame::Frame::default().with_label(filename.as_ref().to_str().unwrap());
-    let img = SharedImage::load(filename).ok();
+    let mut frame = frame::Frame::default();
+    let img = SharedImage::load(&filename).ok();
     if let Some(ref img) = img {
         let w = img.width();
         let h = img.height();
         frame.set_size(w, h);
     }
     frame.set_image(img);
+    frame.set_tooltip(filename.as_ref().to_str().unwrap());
     frame
 }
 
@@ -328,12 +329,12 @@ pub trait FltkForm {
 impl FltkForm for FlImage {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let val = format!("{}", *self);
-        let mut i = make_image_frame(val.as_str());
+        let i = make_image_frame(val.as_str());
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let val = format!("{}", *self);
-        let mut i = make_image_frame(val.as_str());
+        let i = make_image_frame(val.as_str());
         Box::new(i)
     }
 }
@@ -710,9 +711,8 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
                         return choice.choice();
                     }
                     _ => {
-                        let wid = unsafe {
-                            widget::Widget::from_widget_ptr(child.as_widget_ptr() as _)
-                        };
+                        let wid =
+                            unsafe { widget::Widget::from_widget_ptr(child.as_widget_ptr() as _) };
                         return Some(format!("{}", wid.label()));
                     }
                 }
