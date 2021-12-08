@@ -90,6 +90,8 @@ use std::fmt;
 use std::mem::transmute;
 use std::path::Path;
 
+mod utils;
+
 pub fn make_image_frame<P: AsRef<Path>>(filename: P) -> frame::Frame {
     let mut frame = frame::Frame::default();
     let img = SharedImage::load(&filename).ok();

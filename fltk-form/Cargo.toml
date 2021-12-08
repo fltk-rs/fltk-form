@@ -14,3 +14,4 @@ license = "MIT"
 [dependencies]
 fltk = "1.2.16"
 fltk-form-derive = { version = "=0.1.1", path = "../fltk-form-derive" }
+color-maps = "0.1"
