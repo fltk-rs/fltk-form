@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate fltk_form_derive;
 
-use fltk::{prelude::*, *};
+use fltk::{enums::*, prelude::*, *};
 use fltk_form::{FltkForm, HasProps};
 
 #[derive(Copy, Debug, Clone, FltkForm)]
@@ -58,6 +58,9 @@ fn main() {
 
     let v = form.get_prop("b"); // <-- get a single property
     assert_eq!(v, Some("3.0".to_owned()));
+    
+    let mut c = form.get_widget("c").unwrap();
+    c.set_color(Color::Red.inactive());
 
     btn.set_callback(move |_| {
         println!("{:?}", form.get_props()); // <-- get a HashMap of the properties

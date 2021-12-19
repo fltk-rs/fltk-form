@@ -83,7 +83,7 @@
     }
     ```
 
-    
+
     You can also rename properties using the rename_prop() method:
     ```rust,no_run
     #[macro_use]
@@ -169,7 +169,7 @@ use std::fmt;
 use std::mem::transmute;
 use std::path::Path;
 
-mod utils;
+pub mod utils;
 
 pub fn make_image_frame<P: AsRef<Path>>(filename: P) -> frame::Frame {
     let mut frame = frame::Frame::default();
@@ -294,7 +294,7 @@ impl Form {
                                 let inp = unsafe {
                                     button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
                                 };
-                                return Some(format!("{}", inp.value()));
+                                return Some(inp.value().to_string());
                             }
                             3 => {
                                 let choice = unsafe {
@@ -306,7 +306,7 @@ impl Form {
                                 let wid = unsafe {
                                     widget::Widget::from_widget_ptr(child.as_widget_ptr() as _)
                                 };
-                                return Some(format!("{}", wid.label()));
+                                return Some(wid.label());
                             }
                         }
                     }
@@ -396,6 +396,22 @@ impl Form {
                     }
                 }
             }
+        }
+    }
+
+    pub fn get_widget(&self, prop: &str) -> Option<Box<dyn WidgetExt>> {
+        if let Some(grp) = self.as_group() {
+            for child in grp.into_iter() {
+                if child.label() == prop {
+                    return Some(Box::new(child));
+                }
+            }
+            None
+        } else if self.label() == prop {
+            let wid = unsafe { widget::Widget::from_widget_ptr(self.as_widget_ptr()) };
+            Some(Box::new(wid))
+        } else {
+            None
         }
     }
 }
@@ -794,7 +810,7 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
                     _ => {
                         let wid =
                             unsafe { widget::Widget::from_widget_ptr(child.as_widget_ptr() as _) };
-                        return Some(format!("{}", wid.label()));
+                        return Some(wid.label());
                     }
                 }
             }
@@ -868,11 +884,29 @@ fn get_props_(wid: &Box<dyn WidgetExt>) -> HashMap<String, String> {
     temp
 }
 
+#[allow(clippy::borrowed_box)]
+fn get_widget_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<Box<dyn WidgetExt>> {
+    if let Some(grp) = wid.as_group() {
+        for child in grp.into_iter() {
+            if child.label() == prop {
+                return Some(Box::new(child));
+            }
+        }
+        None
+    } else if wid.label() == prop {
+        let wid = unsafe { widget::Widget::from_widget_ptr(wid.as_widget_ptr()) };
+        Some(Box::new(wid))
+    } else {
+        None
+    }
+}
+
 pub trait HasProps {
     fn get_prop(&self, prop: &str) -> Option<String>;
     fn set_prop(&mut self, prop: &str, value: &str) -> Result<(), FltkFormError>;
     fn get_props(&self) -> HashMap<String, String>;
     fn rename_prop(&mut self, prop: &str, new_name: &str);
+    fn get_widget(&self, prop: &str) -> Option<Box<dyn WidgetExt>>;
 }
 
 impl HasProps for Box<dyn WidgetExt> {
@@ -887,5 +921,8 @@ impl HasProps for Box<dyn WidgetExt> {
     }
     fn rename_prop(&mut self, prop: &str, new_name: &str) {
         rename_prop_(self, prop, new_name);
+    }
+    fn get_widget(&self, prop: &str) -> Option<Box<dyn WidgetExt>> {
+        get_widget_(self, prop)
     }
 }

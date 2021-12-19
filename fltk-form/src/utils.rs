@@ -1,6 +1,6 @@
 use color_maps::html::HTML_MAP;
 
-pub(crate) fn color_map_adaptor(html_name: &str) -> String {
+pub fn color_map_adaptor(html_name: &str) -> String {
     if html_name.starts_with('#') {
         return html_name.to_string();
     }
