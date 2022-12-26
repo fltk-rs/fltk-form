@@ -25,17 +25,17 @@ impl<T: Copy + Default + FltkForm> FltkForm for MyStruct<T> {
             .with_align(fltk::enums::Align::Left | fltk::enums::Align::Top);
         p.set_spacing(5);
         let mut i = self.a.generate();
-        if unsafe { !i.raw_user_data().is_null() } {
+        {
             i.set_align(fltk::enums::Align::Left);
             i.set_label("a");
         }
         let mut i = self.b.generate();
-        if unsafe { !i.raw_user_data().is_null() } {
+        {
             i.set_align(fltk::enums::Align::Left);
             i.set_label("b");
         }
         let mut i = self.c.generate();
-        if unsafe { !i.raw_user_data().is_null() } {
+        {
             i.set_align(fltk::enums::Align::Left);
             i.set_label("c");
         }
@@ -56,17 +56,17 @@ impl<T: Copy + Default + FltkForm> FltkForm for MyStruct<T> {
             .with_align(fltk::enums::Align::Left | fltk::enums::Align::Top);
         p.set_spacing(5);
         let mut i = self.a.view();
-        if unsafe { !i.raw_user_data().is_null() } {
+        {
             i.set_align(fltk::enums::Align::Left);
             i.set_label("a");
         }
         let mut i = self.b.view();
-        if unsafe { !i.raw_user_data().is_null() } {
+        {
             i.set_align(fltk::enums::Align::Left);
             i.set_label("b");
         }
         let mut i = self.c.view();
-        if unsafe { !i.raw_user_data().is_null() } {
+        {
             i.set_align(fltk::enums::Align::Left);
             i.set_label("c");
         }

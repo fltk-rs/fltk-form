@@ -163,10 +163,9 @@
     ```
 */
 
-use fltk::{image::*, prelude::*, *};
+use fltk::{image::*, prelude::*, utils::is_ptr_of, *};
 use std::collections::HashMap;
 use std::fmt;
-use std::mem::transmute;
 use std::path::Path;
 
 pub mod utils;
@@ -276,36 +275,32 @@ impl Form {
             if let Some(grp) = child.as_group() {
                 for child in grp.into_iter() {
                     if child.label() == prop {
-                        let val = unsafe {
-                            let ptr = child.raw_user_data();
-                            if ptr.is_null() {
-                                return None;
-                            }
-                            ptr as usize
+                        let ptr = child.as_widget_ptr();
+                        let val = if is_ptr_of::<input::Input>(ptr) {
+                            1
+                        } else if is_ptr_of::<button::CheckButton>(ptr) {
+                            2
+                        } else if is_ptr_of::<menu::Choice>(ptr) {
+                            3
+                        } else {
+                            4
                         };
                         match val {
                             1 => {
-                                let inp = unsafe {
-                                    input::Input::from_widget_ptr(child.as_widget_ptr() as _)
-                                };
+                                let inp = input::Input::from_dyn_widget_ptr(ptr as _).unwrap();
                                 return Some(inp.value());
                             }
                             2 => {
-                                let inp = unsafe {
-                                    button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
-                                };
+                                let inp =
+                                    button::CheckButton::from_dyn_widget_ptr(ptr as _).unwrap();
                                 return Some(inp.value().to_string());
                             }
                             3 => {
-                                let choice = unsafe {
-                                    menu::Choice::from_widget_ptr(child.as_widget_ptr() as _)
-                                };
+                                let choice = menu::Choice::from_dyn_widget_ptr(ptr as _).unwrap();
                                 return choice.choice();
                             }
                             _ => {
-                                let wid = unsafe {
-                                    widget::Widget::from_widget_ptr(child.as_widget_ptr() as _)
-                                };
+                                let wid = widget::Widget::from_dyn_widget_ptr(ptr as _).unwrap();
                                 return Some(wid.label());
                             }
                         }
@@ -327,33 +322,31 @@ impl Form {
                 for child in grp.into_iter() {
                     if child.label() == prop {
                         found = true;
-                        let val = unsafe {
-                            let ptr = child.raw_user_data();
-                            if ptr.is_null() {
-                                return Err(FltkFormError::Internal(
-                                    FltkFormErrorKind::FailedToChangeData,
-                                ));
-                            }
-                            ptr as usize
+                        let ptr = child.as_widget_ptr();
+                        let val = if is_ptr_of::<input::Input>(ptr) {
+                            1
+                        } else if is_ptr_of::<button::CheckButton>(ptr) {
+                            2
+                        } else if is_ptr_of::<menu::Choice>(ptr) {
+                            3
+                        } else {
+                            4
                         };
                         match val {
                             1 => {
-                                let mut inp = unsafe {
-                                    input::Input::from_widget_ptr(child.as_widget_ptr() as _)
-                                };
+                                let mut inp =
+                                    input::Input::from_dyn_widget_ptr(ptr as _).unwrap();
                                 inp.set_value(value);
                             }
                             2 => {
-                                let mut inp = unsafe {
-                                    button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
-                                };
+                                let mut inp =
+                                    button::CheckButton::from_dyn_widget_ptr(ptr as _).unwrap();
                                 let v = value == "true";
                                 inp.set_value(v);
                             }
                             3 => {
-                                let mut choice = unsafe {
-                                    menu::Choice::from_widget_ptr(child.as_widget_ptr() as _)
-                                };
+                                let mut choice =
+                                    menu::Choice::from_dyn_widget_ptr(ptr as _).unwrap();
                                 let idx = choice.find_index(value);
                                 choice.set_value(idx);
                             }
@@ -408,7 +401,7 @@ impl Form {
             }
             None
         } else if self.label() == prop {
-            let wid = unsafe { widget::Widget::from_widget_ptr(self.as_widget_ptr()) };
+            let wid: widget::Widget = widget::Widget::from_dyn_widget_ptr(self.as_widget_ptr()).unwrap();
             Some(Box::new(wid))
         } else {
             None
@@ -441,18 +434,12 @@ impl FltkForm for f64 {
         let mut i = input::FloatInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -462,18 +449,12 @@ impl FltkForm for f32 {
         let mut i = input::FloatInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -483,18 +464,12 @@ impl FltkForm for i32 {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -504,18 +479,12 @@ impl FltkForm for u32 {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -525,18 +494,12 @@ impl FltkForm for i64 {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -546,18 +509,12 @@ impl FltkForm for u64 {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -567,18 +524,12 @@ impl FltkForm for isize {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -588,18 +539,12 @@ impl FltkForm for usize {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -609,18 +554,12 @@ impl FltkForm for i8 {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -630,18 +569,12 @@ impl FltkForm for u8 {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -651,18 +584,12 @@ impl FltkForm for i16 {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -672,18 +599,12 @@ impl FltkForm for u16 {
         let mut i = input::IntInput::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         let val = format!("{:?}", *self);
         i.set_value(&val);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -692,17 +613,11 @@ impl FltkForm for String {
     fn generate(&self) -> Box<dyn WidgetExt> {
         let mut i = input::Input::default();
         i.set_value(self);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default();
         i.set_value(self);
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -723,18 +638,12 @@ impl FltkForm for bool {
         let mut i = button::CheckButton::default().with_align(enums::Align::Left);
         i.set_value(*self);
         i.clear_visible_focus();
-        unsafe {
-            i.set_raw_user_data(transmute(2_usize));
-        }
         Box::new(i)
     }
     fn view(&self) -> Box<dyn WidgetExt> {
         let mut i = output::Output::default().with_align(enums::Align::Left);
         i.set_value(&format!("{}", *self));
         i.clear_visible_focus();
-        unsafe {
-            i.set_raw_user_data(transmute(1_usize));
-        }
         Box::new(i)
     }
 }
@@ -783,33 +692,31 @@ fn get_prop_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<String> {
     if let Some(grp) = wid.as_group() {
         for child in grp.into_iter() {
             if child.label() == prop {
-                let val = unsafe {
-                    let ptr = child.raw_user_data();
-                    if ptr.is_null() {
-                        return None;
-                    }
-                    ptr as usize
+                let ptr = child.as_widget_ptr();
+                let val = if is_ptr_of::<input::Input>(ptr) {
+                    1
+                } else if is_ptr_of::<button::CheckButton>(ptr) {
+                    2
+                } else if is_ptr_of::<menu::Choice>(ptr) {
+                    3
+                } else {
+                    4
                 };
                 match val {
                     1 => {
-                        let inp =
-                            unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
+                        let inp = input::Input::from_dyn_widget_ptr(ptr as _).unwrap();
                         return Some(inp.value());
                     }
                     2 => {
-                        let inp = unsafe {
-                            button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
-                        };
+                        let inp = button::CheckButton::from_dyn_widget_ptr(ptr as _).unwrap();
                         return Some(format!("{}", inp.value()));
                     }
                     3 => {
-                        let choice =
-                            unsafe { menu::Choice::from_widget_ptr(child.as_widget_ptr() as _) };
+                        let choice = menu::Choice::from_dyn_widget_ptr(ptr as _).unwrap();
                         return choice.choice();
                     }
                     _ => {
-                        let wid =
-                            unsafe { widget::Widget::from_widget_ptr(child.as_widget_ptr() as _) };
+                        let wid = widget::Widget::from_dyn_widget_ptr(ptr as _).unwrap();
                         return Some(wid.label());
                     }
                 }
@@ -828,31 +735,28 @@ fn set_prop_(wid: &Box<dyn WidgetExt>, prop: &str, value: &str) -> Result<(), Fl
         for child in grp.into_iter() {
             if child.label() == prop {
                 found = true;
-                let val = unsafe {
-                    let ptr = child.raw_user_data();
-                    if ptr.is_null() {
-                        return Err(FltkFormError::Internal(
-                            FltkFormErrorKind::FailedToChangeData,
-                        ));
-                    }
-                    ptr as usize
+                let ptr = child.as_widget_ptr();
+                let val = if is_ptr_of::<input::Input>(ptr) {
+                    1
+                } else if is_ptr_of::<button::CheckButton>(ptr) {
+                    2
+                } else if is_ptr_of::<menu::Choice>(ptr) {
+                    3
+                } else {
+                    4
                 };
                 match val {
                     1 => {
-                        let mut inp =
-                            unsafe { input::Input::from_widget_ptr(child.as_widget_ptr() as _) };
+                        let mut inp = input::Input::from_dyn_widget_ptr(ptr as _).unwrap();
                         inp.set_value(value);
                     }
                     2 => {
-                        let mut inp = unsafe {
-                            button::CheckButton::from_widget_ptr(child.as_widget_ptr() as _)
-                        };
+                        let mut inp = button::CheckButton::from_dyn_widget_ptr(ptr as _).unwrap();
                         let v = value == "true";
                         inp.set_value(v);
                     }
                     3 => {
-                        let mut choice =
-                            unsafe { menu::Choice::from_widget_ptr(child.as_widget_ptr() as _) };
+                        let mut choice = menu::Choice::from_dyn_widget_ptr(ptr as _).unwrap();
                         let idx = choice.find_index(value);
                         choice.set_value(idx);
                     }
@@ -894,7 +798,7 @@ fn get_widget_(wid: &Box<dyn WidgetExt>, prop: &str) -> Option<Box<dyn WidgetExt
         }
         None
     } else if wid.label() == prop {
-        let wid = unsafe { widget::Widget::from_widget_ptr(wid.as_widget_ptr()) };
+        let wid: widget::Widget = widget::Widget::from_dyn_widget_ptr(wid.as_widget_ptr()).unwrap();
         Some(Box::new(wid))
     } else {
         None

@@ -31,17 +31,11 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                                 choice.add_choice(mem);
                             }
                             choice.set_value(*self as i32);
-                            unsafe {
-                                choice.set_raw_user_data(std::mem::transmute(3_usize));
-                            }
                             Box::new(choice)
                         }
                         fn view(&self) -> Box<dyn WidgetExt> {
                             let mut choice = output::Output::default();
                             choice.set_value(&format!("{:?}", *self));
-                            unsafe {
-                                choice.set_raw_user_data(std::mem::transmute(1_usize));
-                            }
                             Box::new(choice)
                         }
                     }
@@ -59,10 +53,8 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                     quote_spanned! {
                         span => {
                             let mut i = self.#field_name.generate();
-                            if unsafe { !i.raw_user_data().is_null() } {
-                                i.set_align(fltk::enums::Align::Left);
-                                i.set_label(#field_name_stringified);
-                            }
+                            i.set_align(fltk::enums::Align::Left);
+                            i.set_label(#field_name_stringified);
                         }
                     }
                 });
@@ -73,10 +65,8 @@ pub fn impl_widget_deser_trait(ast: &DeriveInput) -> Result<TokenStream> {
                     quote_spanned! {
                         span => {
                             let mut i = self.#field_name.view();
-                            if unsafe { !i.raw_user_data().is_null() } {
-                                i.set_align(fltk::enums::Align::Left);
-                                i.set_label(#field_name_stringified);
-                            }
+                            i.set_align(fltk::enums::Align::Left);
+                            i.set_label(#field_name_stringified);
                         }
                     }
                 });
