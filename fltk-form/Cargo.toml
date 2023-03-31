@@ -1,7 +1,7 @@
 [package]
 name = "fltk-form"
-version = "0.1.5"
-edition = "2018"
+version = "0.2.0"
+edition = "2021"
 authors = ["MoAlyousef <mohammed.alyousef@neurosrg.com>"]
 description = "Create fltk gui from a data structure"
 repository = "https://github.com/fltk-rs/fltk-form"
@@ -12,6 +12,6 @@ readme = "../README.md"
 license = "MIT"
 
 [dependencies]
-fltk = "1.3.25"
+fltk = "1.4.0"
 fltk-form-derive = { version = "=0.1.2", path = "../fltk-form-derive" }
 color-maps = "0.1"
